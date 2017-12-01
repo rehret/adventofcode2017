@@ -1,10 +1,12 @@
-const { Readable } = require('stream');
+const { Readable, Transform, Writable } = require('stream');
 const { EventEmitter } = require('events');
 
-class TupleStream extends Readable {
+const SumEvent = 'sum';
+
+class TupleReadStream extends Readable {
     constructor(options) {
         super(options);
-        this._source = options.input;
+        this._source = options.input.split('');
         this._index = 0;
         this._intervalFn = options.intervalFn;
     }
@@ -21,37 +23,60 @@ class TupleStream extends Readable {
     }
 }
 
-module.exports.ReverseCaptcha = class ReverseCaptcha {
-    constructor(inputStr, intervalFn) {
-        let sum = 0;
-        const internalEvents = new EventEmitter();
-        const publicEvents = new EventEmitter();
-        const stream = new TupleStream({
-            input: inputStr.split(''),
-            intervalFn: intervalFn
-        });
+class TupleMatchStream extends Transform {
+    constructor(options) {
+        super(options);
+    }
 
-        internalEvents.on('match', val => {
-            sum += val;
-        });
-
-        internalEvents.on('done', () => {
-            publicEvents.emit('sum', sum);
-        });
-
-        stream.on('data', tupleStr => {
-            const tuple = JSON.parse(tupleStr);
-            if (tuple[0] === tuple[1]) {
-                internalEvents.emit('match', parseInt(tuple[0]));
-            }
-        });
-
-        stream.on('end', () => {
-            internalEvents.emit('done');
-        });
-
-        this.on = (...args) => {
-            return publicEvents.on(...args);
+    _transform(chunk, encoding, callback) {
+        if (Buffer.isBuffer(chunk)) {
+            chunk = chunk.toString();
         }
+
+        const tuple = JSON.parse(chunk);
+        this.push(tuple[0] === tuple[1] ? tuple[0] : '0');
+        callback();
     }
 }
+
+class SumWriteStream extends Writable {
+    constructor(options) {
+        super(options);
+        this._sum = 0;
+        this.events = new EventEmitter();
+    }
+
+    _write(chunk, encoding, callback) {
+        if (Buffer.isBuffer(chunk)) {
+            chunk = chunk.toString();
+        }
+
+        this._sum += parseInt(chunk);
+        callback();
+    }
+
+    _final(callback) {
+        this.events.emit(SumEvent, this._sum);
+        callback();
+    }
+}
+
+module.exports.ReverseCaptcha = class ReverseCaptcha {
+    static Process(inputStr, intervalFn = null, callback = null) {
+        if (typeof inputStr === 'object') {
+            const options = inputStr;
+            inputStr = options.input;
+            intervalFn = options.intervalFn;
+            callback = options.callback;
+        }
+        const readStream = new TupleReadStream({
+            input: inputStr,
+            intervalFn: intervalFn
+        });
+        const matchStream = new TupleMatchStream();
+        const sumStream = new SumWriteStream();
+
+        readStream.pipe(matchStream).pipe(sumStream);
+        sumStream.events.on(SumEvent, callback);
+    }
+};
