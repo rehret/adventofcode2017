@@ -1,3 +1,4 @@
+const cluster = require('cluster');
 const { Readable, Transform, Writable } = require('stream');
 const { EventEmitter } = require('events');
 
@@ -6,18 +7,19 @@ const SumEvent = 'sum';
 class TupleReadStream extends Readable {
     constructor(options) {
         super(options);
-        this._source = options.input.split('');
+        this._source = options.input;
+        this._indices = options.indices;
         this._index = 0;
         this._intervalFn = options.intervalFn;
     }
 
     _read() {
-        const tupleTarget = this._intervalFn(new Number(this._index), JSON.parse(JSON.stringify(this._source))) % this._source.length;
-        this.push(JSON.stringify([this._source[this._index], this._source[tupleTarget]]));
+        const tupleTarget = this._intervalFn(this._indices[this._index], JSON.parse(JSON.stringify(this._source))) % this._source.length;
+        this.push(JSON.stringify([this._source[this._indices[this._index]], this._source[tupleTarget]]));
 
         this._index++;
 
-        if (this._index === this._source.length) {
+        if (this._index === this._indices.length) {
             this.push(null);
         }
     }
@@ -61,6 +63,7 @@ class SumWriteStream extends Writable {
     }
 }
 
+const numCpus = require('os').cpus().length;
 module.exports.ReverseCaptcha = class ReverseCaptcha {
     static Process(inputStr, intervalFn = null, callback = null) {
         if (typeof inputStr === 'object') {
@@ -69,14 +72,51 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
             intervalFn = options.intervalFn;
             callback = options.callback;
         }
-        const readStream = new TupleReadStream({
-            input: inputStr,
-            intervalFn: intervalFn
-        });
-        const matchStream = new TupleMatchStream();
-        const sumStream = new SumWriteStream();
 
-        readStream.pipe(matchStream).pipe(sumStream);
-        sumStream.events.on(SumEvent, callback);
+        if (cluster.isMaster) {
+            let numWorkers = 0;
+            while (numWorkers < numCpus) {
+                let workerIndices = [];
+                for (let i = numWorkers; i < inputStr.length; i += numCpus) {
+                    workerIndices.push(i);
+                }
+
+                let worker = cluster.fork({ workerId: numWorkers, indices: JSON.stringify(workerIndices) });
+                numWorkers++;
+            }
+
+            let sum = 0;
+
+            function messageHandler(msg) {
+                sum += msg;
+            }
+
+            for (const id in cluster.workers) {
+                const worker = cluster.workers[id];
+                worker.on('message', messageHandler);
+            }
+
+            cluster.on('exit', () => {
+                numWorkers--;
+                if (numWorkers === 0) {
+                    callback(sum);
+                    cluster.disconnect();
+                }
+            });
+        } else {
+            const readStream = new TupleReadStream({
+                input: inputStr.split(''),
+                indices: JSON.parse(process.env.indices),
+                intervalFn: intervalFn
+            });
+            const matchStream = new TupleMatchStream();
+            const sumStream = new SumWriteStream();
+
+            readStream.pipe(matchStream).pipe(sumStream);
+            sumStream.events.on(SumEvent, sum => {
+                process.send(sum);
+                process.disconnect();
+            });
+        }
     }
 };
