@@ -3,10 +3,7 @@ sum = 0
 offset = int(len(input) / 2)
 
 for index in range(0, len(input) - 1):
-    target = index + offset
-    if target >= len(input):
-        target -= len(input)
-
+    target = (index + offset) % len(input)
     if input[index] == input[target]:
         sum += int(input[index])
 
