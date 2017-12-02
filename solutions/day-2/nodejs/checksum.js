@@ -37,7 +37,7 @@ class LineDifferenceStream extends Transform {
         if (Buffer.isBuffer(chunk)) {
             chunk = chunk.toString();
         }
-        const values = chunk.split(/\s+/).map(val => parseInt(val));
+        const values = chunk.split(/\s+/).map(val => parseInt(val)).filter(val => !isNaN(val));
         this.push(this._lineValueFn(values).toString());
         callback();
     }

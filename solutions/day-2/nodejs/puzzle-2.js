@@ -7,14 +7,11 @@ const input = fs.readFileSync(path.resolve(__dirname, '../input.txt'), 'utf-8');
 Checksum.parse({
     input: input,
     lineValueFn: (values) => {
-        for (let i = 0; i < values.length; i++) {
-            for (let j = 0; j < values.length; j++) {
-                if (i !== j) {
-                    const larger = values[i] > values[j] ? values[i] : values[j];
-                    const smaller = values[i] < values[j] ? values[i] : values[j];
-                    if (larger % smaller === 0) {
-                        return larger / smaller;
-                    }
+        values = values.sort((a, b) => b - a);
+        for (let i = 0; i < values.length - 1; i++) {
+            for (let j = values.length - 1; j > i; j--) {
+                if (values[i] % values[j] === 0) {
+                    return values[i] / values[j];
                 }
             }
         }
