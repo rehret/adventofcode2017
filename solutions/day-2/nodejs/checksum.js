@@ -27,9 +27,10 @@ class LineSplitterTransformStream extends Transform {
     }
 }
 
-class LineMinMaxDifferenceStream extends Transform {
+class LineDifferenceStream extends Transform {
     constructor(options) {
         super(options);
+        this._lineValueFn = options.lineValueFn;
     }
 
     _transform(chunk, encoding, callback) {
@@ -37,9 +38,7 @@ class LineMinMaxDifferenceStream extends Transform {
             chunk = chunk.toString();
         }
         const values = chunk.split(/\s+/).map(val => parseInt(val));
-        const max = values.reduce((max, val) => val > max ? val : max);
-        const min = values.reduce((min, val) => val < min ? val : min);
-        this.push((max - min).toString());
+        this.push(this._lineValueFn(values).toString());
         callback();
     }
 }
@@ -66,16 +65,17 @@ class ChecksumWritableStream extends Writable {
 }
 
 module.exports.Checksum = class Checksum {
-    static parse(input, callback = null) {
+    static parse(input, lineValueFn = null, callback = null) {
         if (typeof input === 'object') {
             const options = input;
             input = options.input;
+            lineValueFn = options.lineValueFn;
             callback = options.callback;
         }
 
         new StringStream({ input: input })
         .pipe(new LineSplitterTransformStream())
-        .pipe(new LineMinMaxDifferenceStream())
+        .pipe(new LineDifferenceStream({ lineValueFn: lineValueFn }))
         .pipe(new ChecksumWritableStream())
         .on('data', data => callback(data));
     }
