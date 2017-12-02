@@ -23,7 +23,6 @@ class TupleReadStream extends Readable {
 class MatchWriteStream extends Writable {
     constructor(options) {
         super(options);
-        this.matches = [];
         this.events = new EventEmitter();
     }
 
@@ -34,13 +33,12 @@ class MatchWriteStream extends Writable {
 
         const tuple = JSON.parse(chunk);
         if (tuple[0] === tuple[1]) {
-            this.matches.push(tuple[0]);
+            this.events.emit(MatchEvent, tuple[0]);
         }
         callback();
     }
 
     _final(callback) {
-        this.matches.forEach(match => this.events.emit(MatchEvent, match));
         this.events.emit(DoneMatchingEvent);
         callback();
     }
@@ -55,6 +53,8 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
             intervalFn = options.intervalFn;
             callback = options.callback;
         }
+
+        const charArray = inputStr.split('');
 
         if (cluster.isMaster) {
             let numWorkers = 0;
@@ -93,7 +93,7 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
                     }
 
                     const readStream = new TupleReadStream({
-                        input: inputStr.split(''),
+                        input: charArray,
                         index: message.index,
                         intervalFn: intervalFn
                     });
