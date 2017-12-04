@@ -17,7 +17,7 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
         if (cluster.isMaster) {
             let numWorkers = 0;
             while (numWorkers < numCpus) {
-                cluster.fork({ workerId: numWorkers++ });
+                cluster.fork({ workerId: numWorkers++, increment: numCpus });
             }
 
             let sum = 0;
@@ -36,17 +36,15 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
                 }
             });
         } else {
-            const numWorkers = numCpus;
-            let index = parseInt(process.env.workerId);
+            const increment = parseInt(process.env.increment);
             let sum = 0;
 
-            while (index < charArray.length) {
+            for (let index = parseInt(process.env.workerId); index < charArray.length; index += increment) {
                 const num1 = charArray[index];
                 const num2 = charArray[intervalFn(index, charArray) % charArray.length];
                 if (num1 === num2) {
                     sum += parseInt(num1);
                 }
-                index += numWorkers;
             }
 
             process.send({ sum: sum });
