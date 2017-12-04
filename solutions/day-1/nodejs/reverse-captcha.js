@@ -17,22 +17,14 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
         if (cluster.isMaster) {
             let numWorkers = 0;
             while (numWorkers < numCpus) {
-                cluster.fork({ workerId: ++numWorkers });
+                cluster.fork({ workerId: numWorkers++ });
             }
 
             let sum = 0;
-            let index = 0;
 
             cluster.on('message', (worker, message, handle) => {
-                if (message.match) {
-                    sum += message.match;
-                } else if (message.ready) {
-                    if (index < charArray.length) {
-                        worker.send({ index: index });
-                        index++;
-                    } else {
-                        worker.send({ index: -1 });
-                    }
+                if (message.hasOwnProperty('sum')) {
+                    sum += message.sum;
                 }
             });
 
@@ -44,23 +36,21 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
                 }
             });
         } else {
-            process.on('message', (message) => {
-                if (message.hasOwnProperty('index')) {
-                    message.index = parseInt(message.index);
-                    if (message.index === -1) {
-                        process.exit();
-                    }
+            const numWorkers = numCpus;
+            let index = parseInt(process.env.workerId);
+            let sum = 0;
 
-                    const num1 = charArray[message.index];
-                    const num2 = charArray[intervalFn(message.index, charArray) % charArray.length];
-                    if (num1 === num2) {
-                        process.send({ match: parseInt(num1) });
-                    }
-
-                    process.send({ ready: true });
+            while (index < charArray.length) {
+                const num1 = charArray[index];
+                const num2 = charArray[intervalFn(index, charArray) % charArray.length];
+                if (num1 === num2) {
+                    sum += parseInt(num1);
                 }
-            });
-            process.send({ ready: true });
+                index += numWorkers;
+            }
+
+            process.send({ sum: sum });
+            process.exit();
         }
     }
 };
