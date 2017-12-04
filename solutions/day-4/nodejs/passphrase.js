@@ -1,13 +1,17 @@
 module.exports.Passphrase = class Passphrase {
-    static verify(input) {
-        let validPassphrases = input.split(/\n/).filter(p => {
+    static getValidPassphrases(input, comparator = null) {
+        if (typeof input === 'object') {
+            const options = input;
+            input = options.input;
+            comparator = options.comparator;
+        }
+
+        return input.split(/\n/).filter(p => {
             return p.split(/\s+/).every((searchWord, searchIndex, array) => {
                 return array.every((matchWord, matchIndex) => {
-                    return searchWord !== matchWord || searchIndex === matchIndex;
+                    return comparator(searchWord, matchWord, searchIndex, matchIndex, array);
                 });
             });
         });
-
-        return validPassphrases.length;
     }
 };
