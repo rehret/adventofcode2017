@@ -1,50 +1,8 @@
+"use strict";
+
 const cluster = require('cluster');
-const { Readable, Transform, Writable } = require('stream');
-const { EventEmitter } = require('events');
-
-const MatchEvent = 'match';
-const DoneMatchingEvent = 'done';
-
-class TupleReadStream extends Readable {
-    constructor(options) {
-        super(options);
-        this._source = options.input;
-        this._index = options.index;
-        this._intervalFn = options.intervalFn;
-    }
-
-    _read() {
-        const tupleTarget = this._intervalFn(this._index, JSON.parse(JSON.stringify(this._source))) % this._source.length;
-        this.push(JSON.stringify([parseInt(this._source[this._index]), parseInt(this._source[tupleTarget])]));
-        this.push(null);
-    }
-}
-
-class MatchWriteStream extends Writable {
-    constructor(options) {
-        super(options);
-        this.events = new EventEmitter();
-    }
-
-    _write(chunk, encoding, callback) {
-        if (Buffer.isBuffer(chunk)) {
-            chunk = chunk.toString();
-        }
-
-        const tuple = JSON.parse(chunk);
-        if (tuple[0] === tuple[1]) {
-            this.events.emit(MatchEvent, tuple[0]);
-        }
-        callback();
-    }
-
-    _final(callback) {
-        this.events.emit(DoneMatchingEvent);
-        callback();
-    }
-}
-
 const numCpus = require('os').cpus().length;
+
 module.exports.ReverseCaptcha = class ReverseCaptcha {
     static Process(inputStr, intervalFn = null, callback = null) {
         if (typeof inputStr === 'object') {
@@ -59,7 +17,7 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
         if (cluster.isMaster) {
             let numWorkers = 0;
             while (numWorkers < numCpus) {
-                cluster.fork({ workerId: numWorkers++ });
+                cluster.fork({ workerId: ++numWorkers });
             }
 
             let sum = 0;
@@ -69,8 +27,9 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
                 if (message.match) {
                     sum += message.match;
                 } else if (message.ready) {
-                    if (++index < inputStr.length) {
+                    if (index < charArray.length) {
                         worker.send({ index: index });
+                        index++;
                     } else {
                         worker.send({ index: -1 });
                     }
@@ -86,27 +45,19 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
             });
         } else {
             process.on('message', (message) => {
-                if (message.index) {
+                if (message.hasOwnProperty('index')) {
                     message.index = parseInt(message.index);
                     if (message.index === -1) {
                         process.exit();
                     }
 
-                    const readStream = new TupleReadStream({
-                        input: charArray,
-                        index: message.index,
-                        intervalFn: intervalFn
-                    });
-                    const matchStream = new MatchWriteStream();
+                    const num1 = charArray[message.index];
+                    const num2 = charArray[intervalFn(message.index, charArray) % charArray.length];
+                    if (num1 === num2) {
+                        process.send({ match: parseInt(num1) });
+                    }
 
-                    readStream.pipe(matchStream);
-
-                    matchStream.events.on(MatchEvent, match => {
-                        process.send({ match: match });
-                    });
-                    matchStream.events.on(DoneMatchingEvent, () => {
-                        process.send({ ready: true });
-                    });
+                    process.send({ ready: true });
                 }
             });
             process.send({ ready: true });
