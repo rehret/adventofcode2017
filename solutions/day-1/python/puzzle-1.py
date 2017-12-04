@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 
 inputPath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../input.txt"))

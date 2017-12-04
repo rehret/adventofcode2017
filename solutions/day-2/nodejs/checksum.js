@@ -1,3 +1,5 @@
+"use strict";
+
 const { Readable, Transform, Writable } = require('stream');
 
 class StringStream extends Readable {
