@@ -11,7 +11,10 @@ const input = parseInt(fs.readFileSync(path.resolve(__dirname, '../input.txt'), 
 // 6 1 2
 // 7 8 9
 // has sideLength of 2
-const sideLength = Math.ceil(Math.sqrt(input)) - 1;
+// top and right sides get sideLength - 1 from this:
+let sideLength = Math.ceil(Math.sqrt(input)) - 1;
+// add one if sideLength was odd
+sideLength = sideLength + sideLength % 2;
 const ringNumber = sideLength / 2;
 
 // finding the offset of input from a corner
