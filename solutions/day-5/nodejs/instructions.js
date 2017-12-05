@@ -13,7 +13,7 @@ module.exports.Instructions = class Instructions {
             const oldIndex = index;
             const oldValue = input[index];
             index += input[index];
-            input[oldIndex] = offsetModifier(oldIndex, oldValue, input);
+            input[oldIndex] = input[oldIndex] + offsetModifier(oldIndex, oldValue, input);
             moves++;
         }
 

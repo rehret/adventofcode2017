@@ -9,7 +9,7 @@ const input = fs.readFileSync(path.resolve(__dirname, '../input.txt')).toString(
 
 const moves = Instructions.Process({
     input: input,
-    offsetModifier: (index, val, arr) => val + 1
+    offsetModifier: () => 1
 });
 
 console.log(moves);
