@@ -24,5 +24,5 @@ const ringNumber = sideLength / 2;
 // each "side" of the ring is just a rotated version of the other sides, so they all have the same Manhattan Distance
 // since each side is the same, sideKey modulo 1 gives results in terms of the right-side of the ring
 // once we have our "unit-position", multiply by the side length to get the integer index of the number relative to the start of that side
-const sidePosition = parseInt((((input - (Math.pow(sideLength + 1, 2) - (sideLength * 4 - 1)) + 1) / sideLength) % 1) * sideLength);
+const sidePosition = ((((input - (Math.pow(sideLength + 1, 2) - (sideLength * 4 - 1)) + 1) / sideLength) % 1) * sideLength) | 0;
 console.log(ringNumber + Math.abs(ringNumber - sidePosition));
