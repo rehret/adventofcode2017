@@ -22,10 +22,9 @@ module.exports.MemoryAllocator = class MemoryAllocator {
             for (let i = 0; i < incrementRemainder; i++) {
                 input[(maxIndex + i + 1) % input.length]++;
             }
-
-            cycles++;
         }
-        return cycles;
+
+        return memoryBankSnapshots.length;
     }
 }
 
