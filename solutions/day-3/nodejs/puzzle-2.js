@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -25,7 +25,6 @@ class SequenceValue {
 
 const sequence = [];
 sequence.push(new SequenceValue(0, 0, 1));
-let ring = 1;
 let ringCount = 8;
 let ringPosition = 0;
 let x = 1;
@@ -35,7 +34,7 @@ while(sequence[sequence.length - 1].val <= input) {
 
     // get next coordinate
     ringPosition++;
-    const sideLength = parseInt(ringCount / 4);
+    const sideLength = Math.floor(ringCount / 4);
     const sideKey = (ringPosition + 1) / sideLength;
     if (sideKey > 0 && sideKey <= 1) {
         y++;

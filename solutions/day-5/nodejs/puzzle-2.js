@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -9,7 +9,7 @@ const input = fs.readFileSync(path.resolve(__dirname, '../input.txt')).toString(
 
 const moves = Instructions.Process({
     input: input,
-    offsetModifier: (index, val, arr) => {
+    offsetModifier: (index, val) => {
         if (val >= 3) {
             return -1;
         }

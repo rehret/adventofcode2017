@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 module.exports.MemoryAllocator = class MemoryAllocator {
     static CatchInfiniteLoop(input, callback = null) {

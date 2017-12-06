@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const { Readable, Transform, Writable } = require('stream');
 
@@ -76,10 +76,10 @@ module.exports.Checksum = class Checksum {
         }
 
         new StringStream({ input: input })
-        .pipe(new LineSplitterTransformStream())
-        .pipe(new LineDifferenceStream({ lineValueFn: lineValueFn }))
-        .pipe(new ChecksumWritableStream())
-        .on('data', data => callback(data));
+            .pipe(new LineSplitterTransformStream())
+            .pipe(new LineDifferenceStream({ lineValueFn: lineValueFn }))
+            .pipe(new ChecksumWritableStream())
+            .on('data', data => callback(data));
     }
 };
 

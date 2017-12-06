@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.Instructions = class Instructions {
     static Process(input, offsetModifier = null) {
         if (typeof input === 'object') {

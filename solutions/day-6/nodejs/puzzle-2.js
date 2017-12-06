@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -10,7 +10,7 @@ const input = fs.readFileSync(path.resolve(__dirname, '../input.txt')).toString(
 MemoryAllocator.CatchInfiniteLoop({
     input: input,
     callback: (memory, memoryBankSnapshots) => {
-        const previousOccuranceIndex = memoryBankSnapshots.reduce((occuranceIndex, val, index, arr) => {
+        const previousOccuranceIndex = memoryBankSnapshots.reduce((occuranceIndex, val, index) => {
             if (val.every((val, index) => val === memory[index])) {
                 return index;
             }

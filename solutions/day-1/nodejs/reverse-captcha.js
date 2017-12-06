@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const cluster = require('cluster');
 const numCpus = require('os').cpus().length;
@@ -22,7 +22,7 @@ module.exports.ReverseCaptcha = class ReverseCaptcha {
 
             let sum = 0;
 
-            cluster.on('message', (worker, message, handle) => {
+            cluster.on('message', (worker, message) => {
                 if (message.hasOwnProperty('sum')) {
                     sum += message.sum;
                 }

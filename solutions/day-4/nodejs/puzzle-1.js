@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -9,7 +9,7 @@ const input = fs.readFileSync(path.resolve(__dirname, '../input.txt'), 'utf-8');
 
 const validPassphrases = Passphrase.getValidPassphrases({
     input: input,
-    comparator: (searchWord, matchWord, searchIndex, matchIndex, array) => {
+    comparator: (searchWord, matchWord, searchIndex, matchIndex) => {
         return searchWord !== matchWord || searchIndex === matchIndex;
     }
 });

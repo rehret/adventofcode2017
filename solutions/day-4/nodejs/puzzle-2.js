@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -16,7 +16,7 @@ function isAnagram(word1, word2) {
 
 const validPassphrases = Passphrase.getValidPassphrases({
     input: input,
-    comparator: (searchWord, matchWord, searchIndex, matchIndex, array) => {
+    comparator: (searchWord, matchWord, searchIndex, matchIndex) => {
         return !isAnagram(searchWord, matchWord) || searchIndex === matchIndex;
     }
 });

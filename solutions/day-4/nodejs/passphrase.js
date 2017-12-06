@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 module.exports.Passphrase = class Passphrase {
     static getValidPassphrases(input, comparator = null) {
