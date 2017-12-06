@@ -31,7 +31,7 @@ module.exports.MemoryAllocator = class MemoryAllocator {
 
         return memoryBankSnapshots.length;
     }
-}
+};
 
 function configurationSeenBefore(currentConfig, pastConfigs) {
     return pastConfigs.some(pastConfig => {
