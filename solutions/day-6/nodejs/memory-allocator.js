@@ -9,7 +9,6 @@ module.exports.MemoryAllocator = class MemoryAllocator {
         }
 
         const memoryBankSnapshots = [];
-        let cycles = 0;
 
         while (!configurationSeenBefore(input, memoryBankSnapshots)) {
             memoryBankSnapshots.push(JSON.parse(JSON.stringify(input)));
@@ -28,7 +27,6 @@ module.exports.MemoryAllocator = class MemoryAllocator {
         if (typeof callback === 'function') {
             callback(input, memoryBankSnapshots);
         }
-
         return memoryBankSnapshots.length;
     }
 };
