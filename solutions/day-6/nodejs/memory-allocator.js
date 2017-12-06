@@ -1,10 +1,11 @@
 "use strict";
 
 module.exports.MemoryAllocator = class MemoryAllocator {
-    static CatchInfiniteLoop(input) {
+    static CatchInfiniteLoop(input, callback = null) {
         if (typeof input === 'object' && !Array.isArray(input)) {
             const options = input;
             input = options.input;
+            callback = options.callback;
         }
 
         const memoryBankSnapshots = [];
@@ -22,6 +23,10 @@ module.exports.MemoryAllocator = class MemoryAllocator {
             for (let i = 0; i < incrementRemainder; i++) {
                 input[(maxIndex + i + 1) % input.length]++;
             }
+        }
+
+        if (typeof callback === 'function') {
+            callback(input, memoryBankSnapshots);
         }
 
         return memoryBankSnapshots.length;
