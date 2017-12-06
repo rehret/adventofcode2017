@@ -15,7 +15,7 @@ module.exports.MemoryAllocator = class MemoryAllocator {
             memoryBankSnapshots.push(JSON.parse(JSON.stringify(input)));
 
             const maxIndex = input.reduce((maxIndex, val, index, arr) => val > arr[maxIndex] ? index : maxIndex, 0);
-            const incrementForAll = (input[maxIndex] / input.length) | 0;
+            const incrementForAll = Math.floor(input[maxIndex] / input.length);
             const incrementRemainder = input[maxIndex] % input.length;
 
             input[maxIndex] = 0;
