@@ -19,6 +19,10 @@ function getWeightChange(node, parentOddWeight = null, parentCommonWeight = null
     } else {
         let oddWeightIndex;
         if (parentOddWeight !== null && parentCommonWeight !== null) {
+            // if we know our siblings' odd weight and common weight,
+            // we can find the next odd weight by looking for the same difference
+            // between them.
+            // this always works, even when there are only two children.
             oddWeightIndex = childWeights.reduce((oddWeightIndex, weight, index, arr) => {
                 if (arr[oddWeightIndex] - weight === parentOddWeight - parentCommonWeight) {
                     return oddWeightIndex;
@@ -26,6 +30,11 @@ function getWeightChange(node, parentOddWeight = null, parentCommonWeight = null
                 return index;
             }, 0);
         } else {
+            // if we do not know our siblings' odd weight and common weight,
+            // (only occurs when looking at the root node)
+            // we have to find it by comparing the child weights.
+            // this does not always find the correct values if there are only
+            // two children.
             oddWeightIndex = childWeights.reduce((oddIndex, weight, index, arr) => {
                 if (arr.some((w, i) => w === weight && index !== i)) {
                     return oddIndex;
