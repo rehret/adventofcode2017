@@ -49,8 +49,4 @@ class TreeNode {
         this.weight = weight;
         this.children = [];
     }
-
-    static AddChildren(node, names, treeNodes) {
-        treeNodes.filter(n => names.includes(n.name)).forEach(treeNode => node.children.push(treeNode));
-    }
 }
