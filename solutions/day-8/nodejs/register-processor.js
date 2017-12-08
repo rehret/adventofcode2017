@@ -2,10 +2,17 @@
 
 module.exports.RegisterProcessor = class InstructionProcessor {
     /**
-     * @param {string} input
+     * @param {string | object} input
+     * @param {function?} postInstrCallback
      * @returns {Register[]}
      */
-    static GetRegistersAfterInstructions(input) {
+    static GetRegistersAfterInstructions(input, postInstrCallback = null) {
+        if (typeof input === 'object') {
+            const options = input;
+            input = options.input;
+            postInstrCallback = options.postInstrCallback;
+        }
+
         const registers = [];
         const instructions = parse(input);
 
@@ -24,6 +31,10 @@ module.exports.RegisterProcessor = class InstructionProcessor {
 
             if (eval(condition)) {
                 registers.reduce((target, r) => r.name === instr.targetRegister ? r : target).value += instr.incrementAmount;
+            }
+
+            if (typeof postInstrCallback === 'function') {
+                postInstrCallback(registers);
             }
         });
 
