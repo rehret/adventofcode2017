@@ -18,14 +18,19 @@ function parse(input) {
     const treeNodes = [];
     const childrenToAssociate = [];
     input.split(/\n/).forEach(line => {
-        const lineParts = line.split(/->/);
-        const node = lineParts[0];
-        const nodeName = node.split(/\(/)[0].trim();
-        const weight = parseInt(node.split(/\(/)[1].split(/\)/)[0].trim());
+        // Matches
+        // matches[0] -- original string
+        // matches[1] -- node name
+        // matches[2] -- node weight
+        // matches[3] -- '-> node1, node2, node3'
+        // matches[4] -- 'node1, node2, node3'
+        const matches = line.match(/(\w+)\s\((\d+)\)(\s->\s((\w+(,\s)?)+))?/);
+        const nodeName = matches[1];
+        const weight = parseInt(matches[2]);
         treeNodes.push(new TreeNode(nodeName, weight));
 
-        if (lineParts.length > 1) {
-            const children = lineParts[1].split(/,/).map(name => name.trim());
+        if (matches[3] !== undefined) {
+            const children = matches[4].split(/,/).map(name => name.trim());
             childrenToAssociate.push({
                 name: nodeName,
                 children: children
