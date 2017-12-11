@@ -16,23 +16,26 @@ module.exports.KnotHash = class KnotHash {
         let skipSize = 0;
 
         for (let i = 0; i < twistLengths.length; i++) {
-            for (let shiftCount = 0; shiftCount < position; shiftCount++) {
-                arr.push(arr.shift());
-            }
-
-            const reverseSection = arr.splice(0, twistLengths[i]).reverse();
-            const ignoreSection = arr.splice(0);
-
-            arr = reverseSection.concat(ignoreSection);
-
-            for (let shiftCount = 0; shiftCount < position; shiftCount++) {
-                arr.unshift(arr.pop());
-            }
-
-            position = (position + twistLengths[i] + skipSize) % length;
-            skipSize++;
+            arrayShift(arr, -position);
+            arr = arr.splice(0, twistLengths[i]).reverse().concat(arr.splice(0));
+            arrayShift(arr, position);
+            position = (position + twistLengths[i] + skipSize++) % length;
         }
 
         return arr;
     }
 };
+
+/**
+ * @param {any[]} arr
+ * @param {number} distance
+ */
+function arrayShift(arr, distance) {
+    for (let i = 0; i < Math.abs(distance); i++) {
+        if (distance > 0) {
+            arr.unshift(arr.pop());
+        } else {
+            arr.push(arr.shift());
+        }
+    }
+}
