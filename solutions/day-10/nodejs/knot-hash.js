@@ -2,24 +2,34 @@
 
 module.exports.KnotHash = class KnotHash {
     /**
-     * @param {number} length
-     * @param {number[]} twistLengths
+     * @param {number[] | object} arr
+     * @param {number[]?} twistLengths
+     * @param {function?} callback
+     * @param {object?} state
      */
-    static Hash(length, twistLengths) {
-        /** @type {number[]} */
-        let arr = [];
-        for (let i = 0; i < length; i++) {
-            arr.push(i);
+    static Hash(arr, twistLengths = null, callback = null, state = null) {
+        if (!Array.isArray(arr)) {
+            const options = arr;
+            arr = options.arr;
+            twistLengths = options.twistLengths;
+            callback = options.callback;
+            state = options.state;
         }
 
-        let position = 0;
-        let skipSize = 0;
+        state = state || {};
+
+        state.position = state.position || 0;
+        state.skipSize = state.skipSize || 0;
 
         for (let i = 0; i < twistLengths.length; i++) {
-            arrayShift(arr, -position);
+            arrayShift(arr, -state.position);
             arr = arr.splice(0, twistLengths[i]).reverse().concat(arr.splice(0));
-            arrayShift(arr, position);
-            position = (position + twistLengths[i] + skipSize++) % length;
+            arrayShift(arr, state.position);
+            state.position = (state.position + twistLengths[i] + state.skipSize++) % arr.length;
+        }
+
+        if (typeof callback === 'function') {
+            callback(state);
         }
 
         return arr;
