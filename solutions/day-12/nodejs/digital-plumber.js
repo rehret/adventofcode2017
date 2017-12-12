@@ -17,6 +17,30 @@ module.exports.DigitalPlumber = class DigitalPlumber {
         const targetProgram = getProgramWithId(programId, programs);
         return getConnectedPrograms(targetProgram, programs);
     }
+
+    /**
+     * @param {string[]} input
+     * @returns {number[][]}
+     */
+    static GetGroups(input) {
+        /** @type {Program[]} */
+        let programs = [];
+
+        /** @type {number[][]} */
+        const groups = [];
+
+        for (let line of input) {
+            programs.push(parseLine(line));
+        }
+
+        while (programs.length > 0) {
+            const group = getConnectedPrograms(programs[0], programs);
+            programs = programs.filter(p => !group.includes(p.id));
+            groups.push(group);
+        }
+
+        return groups;
+    }
 };
 
 class Program {
