@@ -39,10 +39,13 @@ module.exports.HexNavigator = class HexNavigator {
 
     /**
      * @param {[number, number]} coords
+     * @returns {string[]}
      */
     static GetPathToCoordinates(coords) {
         let x = 0;
         let y = 0;
+
+        /** @type {string[]} */
         let steps = [];
 
         while (x !== coords[0] || y !== coords[1]) {
@@ -70,5 +73,22 @@ module.exports.HexNavigator = class HexNavigator {
         }
 
         return steps;
+    }
+
+    /**
+     * @param {string[]} stepsTaken
+     * @returns {number}
+     */
+    static GetFarthestFromOriginOnPath(stepsTaken) {
+        return stepsTaken.reduce((maxSteps, step, index, arr) => {
+            const steps = arr.slice(0, index);
+            const coords = HexNavigator.FindCoordinatesFromPath(steps);
+            const distance = HexNavigator.GetPathToCoordinates(coords).length;
+
+            if (distance > maxSteps) {
+                return distance;
+            }
+            return maxSteps;
+        }, 0);
     }
 };
