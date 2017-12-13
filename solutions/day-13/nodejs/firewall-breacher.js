@@ -3,17 +3,48 @@
 module.exports.FirewallBreacher = class FirewallBreacher {
     /**
      * @param {string} input
+     * @param {number?} delay
      * @returns {number}
      */
-    static GetBreachSeverity(input) {
+    static GetBreachSeverity(input, delay = 0) {
         const layers = parse(input);
 
         return layers.reduce((severity, layer) => {
-            if (layer.depth % (layer.range * 2 - 2) === 0) {
+            if ((layer.depth + delay) % (layer.range * 2 - 2) === 0) {
                 return severity + (layer.range * layer.depth);
             }
             return severity;
         }, 0);
+    }
+
+    /**
+     * @param {string} input
+     * @param {number?} delay
+     * @returns {boolean}
+     */
+    static PacketIsCaughtWithDelay(input, delay = 0) {
+        const layers = parse(input);
+
+        return layers.reduce((caught, layer) => {
+            if ((layer.depth + delay) % (layer.range * 2 - 2) === 0 || caught) {
+                return true;
+            }
+            return false;
+        }, false);
+    }
+
+    /**
+     * @param {string} input
+     * @returns {number}
+     */
+    static GetSmallestDelayForBreach(input) {
+        let delay = 0;
+
+        while (FirewallBreacher.PacketIsCaughtWithDelay(input, delay)) {
+            delay++;
+        }
+
+        return delay;
     }
 };
 
