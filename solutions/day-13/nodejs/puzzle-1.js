@@ -7,4 +7,4 @@ const { FirewallBreacher } = require('./firewall-breacher');
 
 const input = fs.readFileSync(path.resolve(__dirname, '../input.txt'), 'utf-8');
 
-console.log(FirewallBreacher.GetBreachSeverity(input));
+console.log(FirewallBreacher.GetBreachSeverity(FirewallBreacher.ParseInput(input)));
