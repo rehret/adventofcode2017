@@ -6,6 +6,7 @@ module.exports.KnotHash = class KnotHash {
      * @param {number[]?} twistLengths
      * @param {function?} callback
      * @param {object?} state
+     * @returns {number[]}
      */
     static Twist(arr, twistLengths = null, callback = null, state = null) {
         if (!Array.isArray(arr)) {
@@ -37,6 +38,7 @@ module.exports.KnotHash = class KnotHash {
 
     /**
      * @param {string} hashKey
+     * @returns {string}
      */
     static Hash(hashKey) {
         let arr = [];
