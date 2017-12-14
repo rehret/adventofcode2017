@@ -12,6 +12,6 @@ for (let i = 0; i < 256; i++) {
     arr.push(i);
 }
 
-const result = KnotHash.Hash(arr, input);
+const result = KnotHash.Twist(arr, input);
 
 console.log(result[0] * result[1]);
