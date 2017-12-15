@@ -4,17 +4,22 @@ module.exports.Generator = class Generator {
     /**
      * @param {number} value
      * @param {number} factor
+     * @param {(result: number) => boolean} validator
      */
-    constructor(value, factor) {
+    constructor(value, factor, validator = () => true) {
         this.value = value;
         this.factor = factor;
+        this.validator = validator;
     }
 
     /**
      * @returns number
      */
     Generate() {
-        this.value = (this.value * this.factor) % divisor;
+        this.value = getNewValue(this.value, this.factor, divisor);
+        while (!this.validator(this.value)) {
+            this.value = getNewValue(this.value, this.factor, divisor);
+        }
         return this.value;
     }
 
@@ -41,3 +46,7 @@ module.exports.Generator = class Generator {
 };
 
 const divisor = 2147483647;
+
+function getNewValue(value, factor, divisor) {
+    return (value * factor) % divisor;
+}
