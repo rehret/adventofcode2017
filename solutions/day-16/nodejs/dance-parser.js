@@ -2,23 +2,15 @@
 
 module.exports.DanceParser = class DanceParser {
     /**
-     * @param {string | Move[]} input
-     * @param {string[]} arr
+     * @param {string} input
      * @returns {string[]}
      */
-    static GetPositionsAfterOneSet(input, arr = null) {
-        const moves = Array.isArray(input) ? input : parse(input);
-        arr = arr || generateStartingArray();
+    static GetPositionsAfterOneSet(input) {
+        const moves = parse(input);
+        const arr = generateStartingArray();
 
-        for(let move of moves) {
-            if (move.type === 'spin') {
-                arr = arr.splice(arr.length - parseInt(move.param1)).concat(arr);
-            } else if (move.type === 'swap') {
-                swap(arr, parseInt(move.param1), parseInt(move.param2));
-            } else if (move.type === 'partner') {
-                swap(arr, arr.indexOf(move.param1), arr.indexOf(move.param2));
-            }
-        }
+        processDanceMovesOnArray(moves, arr);
+
         return arr;
     }
 
@@ -27,23 +19,38 @@ module.exports.DanceParser = class DanceParser {
      * @returns {string[]}
      */
     static GetPositionsAfterFullDance(input) {
-        let arr = generateStartingArray();
+        const arr = generateStartingArray();
         const moves = parse(input);
 
         for (let i = 0; i < 1000000000; i++) {
-            arr = DanceParser.GetPositionsAfterOneSet(moves, arr);
+            processDanceMovesOnArray(moves, arr);
         }
 
         return arr;
     }
 };
 
+/**
+ * @param {Move[]} moves
+ * @param {string[]} arr
+ */
+function processDanceMovesOnArray(moves, arr) {
+    for(let move of moves) {
+        if (move.type === 'spin') {
+            arr.unshift(...arr.splice(arr.length - parseInt(move.param1)));
+        } else if (move.type === 'swap') {
+            swap(arr, parseInt(move.param1), parseInt(move.param2));
+        } else if (move.type === 'partner') {
+            swap(arr, arr.indexOf(move.param1), arr.indexOf(move.param2));
+        }
+    }
+}
+
 class Move {
     /**
-     *
      * @param {('spin' | 'swap' | 'partner')} type
      * @param {string} param1
-     * @param {string} param2
+     * @param {string?} param2
      */
     constructor(type, param1, param2 = null) {
         this.type = type;
