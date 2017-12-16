@@ -7,9 +7,8 @@ module.exports.DanceParser = class DanceParser {
      * @returns {string[]}
      */
     static GetPositionsAfterOneSet(input, arr = null) {
-        arr = arr || generateStartingArray();
-
         const moves = Array.isArray(input) ? input : parse(input);
+        arr = arr || generateStartingArray();
 
         for(let move of moves) {
             if (move.type === 'spin') {
@@ -31,7 +30,7 @@ module.exports.DanceParser = class DanceParser {
         let arr = generateStartingArray();
         const moves = parse(input);
 
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 1000000000; i++) {
             arr = DanceParser.GetPositionsAfterOneSet(moves, arr);
         }
 
