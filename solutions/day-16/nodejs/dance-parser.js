@@ -1,5 +1,5 @@
 'use strict';
-
+const orders = [];
 module.exports.DanceParser = class DanceParser {
     /**
      * @param {string} input
@@ -19,10 +19,19 @@ module.exports.DanceParser = class DanceParser {
      * @returns {string[]}
      */
     static GetPositionsAfterFullDance(input) {
-        const arr = generateStartingArray();
+        let arr = generateStartingArray();
         const moves = parse(input);
+        const startingValue = arr.join('');
+        let count = 0;
+        while(arr.join('') !== startingValue || count === 0) {
+            count++;
+            processDanceMovesOnArray(moves, arr);
+        }
 
-        for (let i = 0; i < 1000000000; i++) {
+        const offsetFromStart = 1000000000 % count;
+        arr = generateStartingArray();
+
+        for (let i = 0; i < offsetFromStart; i++) {
             processDanceMovesOnArray(moves, arr);
         }
 
