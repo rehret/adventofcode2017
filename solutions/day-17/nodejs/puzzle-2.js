@@ -7,6 +7,6 @@ const { Spinlock } = require('./spinlock');
 
 const input = parseInt(fs.readFileSync(path.resolve(__dirname, '../input.txt'), 'utf-8'));
 
-Spinlock.GetCircularBuffer(input, 2017, (lastNodeInserted) => {
-    console.log(lastNodeInserted.next.value);
-});
+const zeroNode = Spinlock.GetCircularBuffer(input, 50000000);
+
+console.log(zeroNode.next.value);
