@@ -2,9 +2,6 @@
 
 const { EventEmitter } = require('events');
 
-const soundEventName = 'sound';
-const recoverEventName = 'recover';
-
 /**
  * @typedef {Object.<string, typeof Instruction>} InstructionMapping
  * @property {typeof Instruction} snd
@@ -20,28 +17,24 @@ class Interpretter {
     /**
      * @param {string} input
      * @param {InstructionMapping} instructionMapping
-     * @param {(sound: number) => void} recoverCallback
+     * @param {EventEmitter} events
      */
-    static Execute(input, instructionMapping, recoverCallback) {
-        const state = new ProgramState();
-        state.instructions = parse(input, instructionMapping);
+    constructor(input, instructionMapping, events = null) {
+        this.state = new ProgramState();
+        this.state.instructions = parse(input, instructionMapping);
 
-        let lastSound = null;
-        let soundRecovered = false;
+        if (events !== null) {
+            this.state.events = events;
+        }
 
-        state.events.on(soundEventName, sound => {
-            lastSound = sound;
+        this.state.events.on('terminate', () => {
+            this.state.executing = false;
         });
+    }
 
-        state.events.on(recoverEventName, () => {
-            soundRecovered = true;
-            if (typeof recoverCallback === 'function') {
-                recoverCallback(lastSound);
-            }
-        });
-
-        while (!soundRecovered && state.instructionPointer < state.instructions.length && state.instructionPointer >= 0) {
-            state.instructions[state.instructionPointer].Operation(state);
+    Execute() {
+        while (this.state.executing && this.state.instructionPointer < this.state.instructions.length && this.state.instructionPointer >= 0) {
+            this.state.instructions[this.state.instructionPointer].Operation(this.state);
         }
     }
 };
@@ -59,6 +52,8 @@ class Register {
 
 class ProgramState {
     constructor() {
+        this.executing = true;
+
         /** @type {Register[]} */
         this.registers = [];
 
@@ -109,23 +104,6 @@ class Instruction {
      * @param {ProgramState} state
      */
     Operation(state) {}
-}
-
-class SoundInstruction extends Instruction {
-    /**
-     * @param {string[]} params
-     */
-    constructor(params) {
-        super(params);
-    }
-
-    /**
-     * @param {ProgramState} state
-     */
-    Operation(state) {
-        state.events.emit(soundEventName, state.GetValueOrRegisterValue(this.params[0]));
-        state.instructionPointer++;
-    }
 }
 
 class SetInstruction extends Instruction {
@@ -200,28 +178,6 @@ class ModulusInstruction extends Instruction {
     }
 }
 
-class RecoverInstruction extends Instruction {
-    /**
-     * @param {string[]} params
-     */
-    constructor(params) {
-        super(params);
-    }
-
-    /**
-     * @param {ProgramState} state
-     */
-    Operation(state) {
-        const checkValue = state.GetValueOrRegisterValue(this.params[0]);
-
-        if (checkValue !== 0) {
-            state.events.emit(recoverEventName);
-        }
-
-        state.instructionPointer++;
-    }
-}
-
 class JumpGreaterThanZeroInstruction extends Instruction {
     /**
      * @param {string[]} params
@@ -263,12 +219,11 @@ function parse(input, instructionMapping) {
 
 module.exports = {
     Interpretter,
+    ProgramState,
     Instruction,
-    SoundInstruction,
     SetInstruction,
     AddInstruction,
     MultiplyInstruction,
     ModulusInstruction,
-    RecoverInstruction,
     JumpGreaterThanZeroInstruction
 }
