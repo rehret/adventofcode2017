@@ -13,14 +13,14 @@ const { EventEmitter } = require('events');
  * @property {typeof Instruction} jgz
  */
 
-class Interpretter {
+ class Interpretter {
     /**
      * @param {string} input
      * @param {InstructionMapping} instructionMapping
      * @param {ProgramState} state
      */
     constructor(input, instructionMapping, state = null) {
-        this.state = new ProgramState();
+        this.state = state || new ProgramState();
         this.state.instructions = parse(input, instructionMapping);
 
         if (state !== null) {
@@ -228,6 +228,7 @@ function parse(input, instructionMapping) {
 module.exports = {
     Interpretter,
     ProgramState,
+    Register,
     Instruction,
     SetInstruction,
     AddInstruction,
