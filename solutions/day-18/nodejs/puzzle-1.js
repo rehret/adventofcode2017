@@ -17,19 +17,6 @@ const {
 
 const input = fs.readFileSync(path.resolve(__dirname, '../input.txt'), 'utf-8');
 
-const soundEventName = 'sound';
-const recoverEventName = 'recover';
-const events = new EventEmitter();
-
-/** @type {number} */
-let lastSound;
-
-events.on(soundEventName, sound => lastSound = sound);
-events.on(recoverEventName, () => {
-    console.log(lastSound);
-    events.emit('terminate');
-});
-
 class SoundInstruction extends Instruction {
     /**
      * @param {string[]} params
@@ -79,4 +66,17 @@ const mapping = {
     jgz: JumpGreaterThanZeroInstruction
 };
 
-new Interpretter(input, mapping, events).Execute();
+const soundEventName = 'sound';
+const recoverEventName = 'recover';
+const interpretter = new Interpretter(input, mapping);
+
+/** @type {number} */
+let lastSound;
+
+interpretter.state.events.on(soundEventName, sound => lastSound = sound);
+interpretter.state.events.on(recoverEventName, () => {
+    console.log(lastSound);
+    interpretter.state.events.emit('terminate');
+});
+
+interpretter.Execute();

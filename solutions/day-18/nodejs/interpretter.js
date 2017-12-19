@@ -17,14 +17,14 @@ class Interpretter {
     /**
      * @param {string} input
      * @param {InstructionMapping} instructionMapping
-     * @param {EventEmitter} events
+     * @param {ProgramState} state
      */
-    constructor(input, instructionMapping, events = null) {
+    constructor(input, instructionMapping, state = null) {
         this.state = new ProgramState();
         this.state.instructions = parse(input, instructionMapping);
 
-        if (events !== null) {
-            this.state.events = events;
+        if (state !== null) {
+            this.state = state;
         }
 
         this.state.events.on('terminate', () => {
@@ -33,8 +33,16 @@ class Interpretter {
     }
 
     Execute() {
-        while (this.state.executing && this.state.instructionPointer < this.state.instructions.length && this.state.instructionPointer >= 0) {
+        while (this.state.executing) {
+            this.Step();
+        }
+    }
+
+    Step() {
+        if (this.state.executing && this.state.instructionPointer < this.state.instructions.length && this.state.instructionPointer >= 0) {
             this.state.instructions[this.state.instructionPointer].Operation(this.state);
+        } else {
+            this.state.executing = false;
         }
     }
 };
