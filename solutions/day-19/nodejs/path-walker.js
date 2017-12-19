@@ -3,9 +3,10 @@
 module.exports.PathWalker = class PathWalker {
     /**
      * @param {string} input
+     * @param {(steps: string[]) => void} stepsCallback
      * @returns {string[]}
      */
-    static GetLettersFoundOnPath(input) {
+    static GetLettersFoundOnPath(input, stepsCallback = null) {
         const grid = parse(input);
         const location = getStartingCoordinate(grid);
         const heading = new Pair(0, 1);
@@ -13,7 +14,11 @@ module.exports.PathWalker = class PathWalker {
         /** @type {string[]} */
         const nodesFound = [];
 
+        /** @type {string[]} */
+        const steps = [];
+
         while (heading.x !== 0 || heading.y !== 0) {
+            steps.push(grid[location.y][location.x]);
             if (/[-|]/.test(grid[location.y][location.x])) {
                 location.x += heading.x;
                 location.y += heading.y;
@@ -45,6 +50,12 @@ module.exports.PathWalker = class PathWalker {
                 heading.x = 0;
                 heading.y = 0;
             }
+        }
+
+        if (typeof stepsCallback === 'function') {
+            // strip off the empty space that was added to the end of the list
+            steps.splice(steps.length - 1);
+            stepsCallback(steps);
         }
 
         return nodesFound;
